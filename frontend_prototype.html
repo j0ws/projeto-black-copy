@@ -122,7 +122,17 @@
                     <option value="24h">Last 24 Hours</option>
                     <option value="30d">Last 30 Days</option>
                 </select>
-                <input type="text" id="filterChannel" placeholder="Specific Channel" class="bg-dark-800 border border-white/10 text-slate-300 rounded-lg px-4 py-2 outline-none focus:border-brand-500 w-48">
+
+                <div class="relative w-64">
+                    <input type="text" id="filterChannel" placeholder="Specific Channel" class="w-full bg-dark-800 border border-white/10 text-slate-300 rounded-lg px-4 py-2 outline-none focus:border-brand-500" autocomplete="off">
+
+                    <!-- Autocomplete Dropdown -->
+                    <div id="channelAutocomplete" class="absolute z-50 w-full mt-2 bg-dark-800 border border-white/10 rounded-lg shadow-xl overflow-hidden hidden">
+                        <ul id="channelSuggestions" class="max-h-60 overflow-y-auto">
+                            <!-- Injected via JS -->
+                        </ul>
+                    </div>
+                </div>
             </div>
 
             <div id="statusAlert" class="hidden text-center text-brand-500 font-medium"></div>
@@ -152,6 +162,62 @@
         const API_BASE_URL = "http://127.0.0.1:8000/api/v1/miner";
         let selectedVideos = [];
         let videoDataMap = {}; // Maps videoId to {url, start, end}
+
+        // --- Channel Filter & Autocomplete Logic ---
+        const MOCK_CHANNELS = [
+            { name: "Health Guru", handle: "@healthguru", subs: "1.2M" },
+            { name: "Fitness Pro", handle: "@fitness_pro", subs: "850K" },
+            { name: "Dr. Lair Ribeiro Cortes", handle: "@laircortes", subs: "2.5M" },
+            { name: "Renato Cariani", handle: "@renatocariani", subs: "5M" },
+            { name: "Growth Supplements", handle: "@growthsupplements", subs: "3M" }
+        ];
+
+        const channelInput = document.getElementById('filterChannel');
+        const autocompleteDropdown = document.getElementById('channelAutocomplete');
+        const suggestionsList = document.getElementById('channelSuggestions');
+
+        channelInput.addEventListener('input', (e) => {
+            const val = e.target.value.toLowerCase().trim();
+            suggestionsList.innerHTML = '';
+
+            if (!val) {
+                autocompleteDropdown.classList.add('hidden');
+                return;
+            }
+
+            const matches = MOCK_CHANNELS.filter(c => c.name.toLowerCase().includes(val) || c.handle.toLowerCase().includes(val));
+
+            if (matches.length > 0) {
+                autocompleteDropdown.classList.remove('hidden');
+                matches.forEach(match => {
+                    const li = document.createElement('li');
+                    li.className = "px-4 py-3 hover:bg-white/5 cursor-pointer border-b border-white/5 last:border-0 flex items-center justify-between transition-colors";
+                    li.innerHTML = `
+                        <div class="flex flex-col">
+                            <span class="text-sm font-semibold text-white">${match.name}</span>
+                            <span class="text-xs text-brand-500">${match.handle}</span>
+                        </div>
+                        <span class="text-xs text-slate-400"><i class="ph-fill ph-users"></i> ${match.subs}</span>
+                    `;
+                    // Fix: On click, select handle, hide dropdown, and trigger focus back to main search (unblock)
+                    li.addEventListener('click', () => {
+                        channelInput.value = match.handle;
+                        autocompleteDropdown.classList.add('hidden');
+                        document.getElementById('searchInput').focus(); // UX unblock
+                    });
+                    suggestionsList.appendChild(li);
+                });
+            } else {
+                autocompleteDropdown.classList.add('hidden');
+            }
+        });
+
+        // Hide dropdown on outside click
+        document.addEventListener('click', (e) => {
+            if (!channelInput.contains(e.target) && !autocompleteDropdown.contains(e.target)) {
+                autocompleteDropdown.classList.add('hidden');
+            }
+        });
 
         document.getElementById('btnSearch').addEventListener('click', async () => {
             const query = document.getElementById('searchInput').value.trim();
@@ -211,9 +277,9 @@
             for (let vid of videos) {
                 if(!vid.id) continue;
                 
-                // Fetch Highlights (Mocked T-0.5 logic here for UI speed, but calls backend to get accurate transcript match)
+                // Smart 20s Slider Positioning: [MatchTime - 5s] to [MatchTime + 15s]
                 let keywordStart = 0;
-                let keywordEnd = 10;
+                let keywordEnd = 20;
                 
                 if (platform === 'youtube') {
                     try {
@@ -221,8 +287,10 @@
                         if (hRes.ok) {
                             const hData = await hRes.json();
                             if(hData.highlights && hData.highlights.length > 0) {
-                                keywordStart = Math.max(0, hData.highlights[0].start_time - 0.5);
-                                keywordEnd = Math.min(vid.duration || 60, keywordStart + 10);
+                                // Explicit logic: Center 20s window around the detected timestamp
+                                const matchTime = hData.highlights[0].start_time;
+                                keywordStart = Math.max(0, matchTime - 5);
+                                keywordEnd = Math.min(vid.duration || 60, keywordStart + 20);
                             }
                         }
                     } catch(e) { console.warn("Transcript failed, defaulting to 0s", e); }
@@ -232,7 +300,7 @@
                     url: vid.url,
                     duration: vid.duration || 60,
                     start: keywordStart,
-                    end: Math.min(keywordStart + 10, vid.duration || 60)
+                    end: keywordEnd
                 };
 
                 const cardHtml = `

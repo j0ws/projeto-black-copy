@@ -64,33 +64,44 @@ def miner_get_highlights(video_url: str = Query(...), query_word: str = Query(..
         raise HTTPException(status_code=501, detail="Automatic transcription currently supported for YouTube only.")
 
 
+from fastapi.concurrency import run_in_threadpool
+import asyncio
+import uuid
+
 @router.post("/download-clips", summary="Slice and package selected video fragments")
-def miner_download_clips(req: DownloadClipsRequest):
+async def miner_download_clips(req: DownloadClipsRequest):
     """
     **Module 1: Miner - Step 3**
     Receives a list of selected clips with precise slider timestamps.
-    The backend streams and slices exactly that portion.
+    The backend uses concurrent threaded streams to slice exactly that portion.
     Strictly enforced constraint: Maximum 20 seconds per clip.
     """
     downloaded_files = []
     
+    # Pre-validate all clips before starting to avoid partial failures mid-job
     for idx, clip in enumerate(req.clips):
-        # Security Validation for Stream Chunking
         if (clip.end_time - clip.start_time) > 20:
             raise HTTPException(status_code=400, detail=f"Clip {idx} exceeds the strict maximum limit of 20 seconds.")
-            
-        import uuid
+
+    # Wrap the blocking yt-dlp call to be run in a threadpool so it doesn't block the async loop
+    async def process_clip(idx, clip):
         output_name = f"clip_{idx}_{uuid.uuid4().hex[:8]}_miner"
         try:
-            path = download_video_clip(clip.video_url, clip.start_time, clip.end_time, output_name)
-            downloaded_files.append(path)
+            # yt-dlp is a synchronous blocking operation. run_in_threadpool enables concurrency in FastAPI
+            path = await run_in_threadpool(download_video_clip, clip.video_url, clip.start_time, clip.end_time, output_name)
+            return path
         except Exception as e:
             print(f"Error packaging clip {idx}: {e}")
-            
+            return None
+
+    # Process all selected videos concurrently
+    results = await asyncio.gather(*(process_clip(idx, clip) for idx, clip in enumerate(req.clips)))
+    downloaded_files = [path for path in results if path is not None]
+
     if not downloaded_files:
         raise HTTPException(status_code=500, detail="No clips could be generated.")
         
     return {
-        "message": f"Successfully generated {len(downloaded_files)} clips in 'tmp_downloads' folder.",
+        "message": f"Successfully generated {len(downloaded_files)} clips concurrently in 'tmp_downloads' folder.",
         "files": downloaded_files
     }
