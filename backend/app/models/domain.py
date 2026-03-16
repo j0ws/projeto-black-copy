@@ -2,41 +2,40 @@ from sqlalchemy import Column, Integer, String, Float, ForeignKey, JSON
 from sqlalchemy.orm import relationship
 from app.database import Base
 
-class Project(Base):
-    __tablename__ = "projects"
+class VideoMetadata(Base):
+    __tablename__ = "video_metadata"
 
     id = Column(Integer, primary_key=True, index=True)
-    niche = Column(String, index=True)
-    status = Column(String, default="pending")  # pending, processing, completed
-    viral_videos_analyzed = Column(Integer, default=0)
-    
-    # Relação com os Vídeos e Segmentos
-    videos = relationship("VideoAsset", back_populates="project")
-    segments = relationship("Segment", back_populates="project")
-
-class VideoAsset(Base):
-    __tablename__ = "video_assets"
-
-    id = Column(Integer, primary_key=True, index=True)
-    project_id = Column(Integer, ForeignKey("projects.id"))
+    platform = Column(String, index=True) # 'youtube' or 'tiktok'
+    external_id = Column(String, unique=True, index=True)
     url = Column(String)
     title = Column(String)
-    gmv_generated = Column(Float, default=0.0)
+    duration = Column(Float)
+    view_count = Column(Integer)
+    like_count = Column(Integer)
+    channel_name = Column(String)
     
-    project = relationship("Project", back_populates="videos")
+    # Relationships
+    timestamps = relationship("KeywordTimestamp", back_populates="video", cascade="all, delete")
 
-class Segment(Base):
-    __tablename__ = "segments"
+class KeywordTimestamp(Base):
+    __tablename__ = "keyword_timestamps"
 
     id = Column(Integer, primary_key=True, index=True)
-    project_id = Column(Integer, ForeignKey("projects.id"))
+    video_id = Column(Integer, ForeignKey("video_metadata.id"))
+    keyword = Column(String, index=True)
     start_time = Column(Float)
     end_time = Column(Float)
-    text = Column(String)
-    text_rewritten = Column(String, nullable=True)
-    role = Column(String)
-    tone_label = Column(String)
-    risk_score = Column(Float)
-    compliance_flags = Column(JSON)
+    context_text = Column(String)
     
-    project = relationship("Project", back_populates="segments")
+    # Relationships
+    video = relationship("VideoMetadata", back_populates="timestamps")
+
+class DownloadedClip(Base):
+    __tablename__ = "downloaded_clips"
+
+    id = Column(Integer, primary_key=True, index=True)
+    video_url = Column(String)
+    start_time = Column(Float)
+    end_time = Column(Float)
+    file_path = Column(String)

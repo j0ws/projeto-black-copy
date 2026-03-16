@@ -1,9 +1,9 @@
 <!DOCTYPE html>
-<html lang="pt-BR" class="dark">
+<html lang="en" class="dark">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>BlackCopy AI - Prospector de Criativos</title>
+    <title>BlackCopy AI - Miner Module</title>
     
     <!-- Google Fonts: Inter -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -26,23 +26,14 @@
                     },
                     colors: {
                         brand: {
-                            50: '#f0fdf4',
-                            100: '#dcfce7',
-                            500: '#22c55e',
-                            600: '#16a34a',
-                            700: '#15803d',
-                            900: '#14532d',
-                            950: '#052e16',
+                            500: '#ef4444', // Red for Youtube/TikTok vibe
+                            600: '#dc2626',
                         },
                         dark: {
                             900: '#0F1115',
                             800: '#16191E',
                             700: '#20242B',
-                            600: '#2C323D'
                         }
-                    },
-                    animation: {
-                        'pulse-slow': 'pulse 3s cubic-bezier(0.4, 0, 0.6, 1) infinite',
                     }
                 }
             }
@@ -50,297 +41,491 @@
     </script>
 
     <style>
-        body {
-            background-color: #0F1115;
-            color: #E2E8F0;
-        }
-        
+        body { background-color: #0F1115; color: #E2E8F0; }
         .glass-panel {
             background: rgba(22, 25, 30, 0.7);
             backdrop-filter: blur(12px);
-            -webkit-backdrop-filter: blur(12px);
             border: 1px solid rgba(255, 255, 255, 0.05);
         }
-
-        .gradient-text {
-            background: linear-gradient(135deg, #4ade80 0%, #3b82f6 100%);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
+        /* Dual Range Slider Styles */
+        input[type="range"] {
+            -webkit-appearance: none;
+            width: 100%;
+            background: transparent;
+            position: absolute;
+            pointer-events: none;
         }
-
-        .highlight-word {
-            background-color: rgba(34, 197, 94, 0.2);
-            color: #4ade80;
-            padding: 0 4px;
-            border-radius: 4px;
-            font-weight: 600;
+        input[type="range"]::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            pointer-events: all;
+            width: 16px;
+            height: 16px;
+            background-color: #ef4444;
+            border-radius: 50%;
+            cursor: pointer;
         }
-        
-        .scroll-hidden::-webkit-scrollbar {
-            display: none;
+        .slider-track {
+            position: absolute;
+            height: 4px;
+            background: #ef4444;
+            top: 50%;
+            transform: translateY(-50%);
+            border-radius: 2px;
+            z-index: -1;
         }
     </style>
 </head>
-<body class="min-h-screen flex flex-col antialiased selection:bg-brand-500 selection:text-white">
+<body class="min-h-screen flex flex-col antialiased">
 
     <!-- Header -->
     <header class="sticky top-0 z-50 glass-panel border-b border-white/5 py-4">
-        <div class="max-w-7xl mx-auto px-6 auto flex justify-between items-center">
+        <div class="max-w-7xl mx-auto px-6 flex justify-between items-center">
             <div class="flex items-center gap-3">
-                <div class="w-8 h-8 rounded-lg bg-gradient-to-br from-brand-400 to-blue-500 flex items-center justify-center shadow-lg shadow-brand-500/20">
-                    <i class="ph-bold ph-lightning text-white text-xl"></i>
-                </div>
-                <h1 class="text-xl font-bold tracking-tight text-white">Black<span class="text-brand-500">Copy</span> AI</h1>
-            </div>
-            
-            <nav class="flex items-center gap-6 text-sm font-medium text-slate-400">
-                <a href="#" class="text-brand-500 hover:text-brand-400 transition-colors">Prospector + Kalodata</a>
-                <a href="#" class="hover:text-white transition-colors">Timeline de Edição</a>
-                <a href="#" class="hover:text-white transition-colors">Meus Criativos</a>
-            </nav>
-            
-            <div class="flex items-center gap-4">
-                <div class="text-right hidden md:block">
-                    <p class="text-sm font-medium text-white">Agência Flow</p>
-                    <p class="text-xs text-brand-500">Plano Pro</p>
-                </div>
-                <img src="https://i.pravatar.cc/150?img=11" alt="Avatar" class="w-9 h-9 rounded-full ring-2 ring-brand-500/30">
+                <i class="ph-fill ph-pickaxe text-brand-500 text-2xl"></i>
+                <h1 class="text-xl font-bold tracking-tight text-white">Black<span class="text-brand-500">Copy</span> Miner</h1>
             </div>
         </div>
     </header>
 
     <!-- Main Content -->
-    <main class="flex-1 w-full max-w-7xl mx-auto px-6 py-10 flex flex-col gap-10">
+    <main class="flex-1 w-full max-w-7xl mx-auto px-6 py-10 flex flex-col gap-8">
         
-        <!-- Search Section -->
-        <section class="w-full max-w-3xl mx-auto text-center space-y-6">
-            <h2 class="text-4xl md:text-5xl font-extrabold tracking-tight text-white leading-tight">
-                Garimpo de Criativos via <span class="gradient-text">Kalodata Trends</span>
-            </h2>
-            <p class="text-slate-400 text-lg">
-                Consulte a nossa API (FastAPI) em tempo real. Identificaremos os produtos de pico usando IA, estratificaremos os nichos, e traremos as máquinas de vendas originais para recorte.
-            </p>
-
-            <div class="relative group mt-8 text-left">
-                <div class="absolute -inset-1 bg-gradient-to-r from-brand-500 to-blue-500 rounded-2xl blur opacity-25 group-hover:opacity-40 transition duration-500"></div>
-                <div class="relative bg-dark-800 rounded-2xl border border-white/10 shadow-2xl overflow-hidden focus-within:border-brand-500/50 transition-colors">
-                    
-                    <textarea id="promptInput" rows="3" class="w-full bg-transparent text-white placeholder-slate-500 p-5 outline-none resize-none text-lg" placeholder="Ex: Quero estruturar um criativo altamente lucrativo na área de Bem Estar/Saúde..."></textarea>
-                    
-                    <div class="flex items-center justify-between px-5 pb-4">
-                        <div class="flex gap-2">
-                            <button class="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-brand-500/10 hover:bg-brand-500/20 text-xs font-medium text-brand-400 transition-colors border border-brand-500/20">
-                                <i class="ph-bold ph-brain text-brand-500"></i> Usar GPT-4 Omni
-                            </button>
-                        </div>
-                        
-                        <button id="btnSearch" class="flex items-center gap-2 bg-brand-600 hover:bg-brand-500 text-white px-6 py-2.5 rounded-xl font-medium shadow-lg shadow-brand-500/25 transition-all active:scale-95">
-                            <i class="ph-bold ph-sparkle"></i>
-                            <span>Rodar Prospector API</span>
-                        </button>
-                    </div>
-                </div>
+        <!-- Search Controls -->
+        <section class="w-full max-w-4xl mx-auto space-y-4">
+            <!-- Platform Toggle -->
+            <div class="flex justify-center gap-4 mb-6">
+                <label class="cursor-pointer flex items-center gap-2 bg-dark-800 border border-white/10 px-6 py-3 rounded-xl hover:border-brand-500 transition-colors">
+                    <input type="radio" name="platform" value="youtube" checked class="text-brand-500 bg-dark-900 border-white/20 focus:ring-brand-500">
+                    <i class="ph-fill ph-youtube-logo text-brand-500 text-xl"></i>
+                    <span class="font-medium">YouTube</span>
+                </label>
+                <label class="cursor-pointer flex items-center gap-2 bg-dark-800 border border-white/10 px-6 py-3 rounded-xl hover:border-brand-500 transition-colors opacity-50" title="Mocked for V1">
+                    <input type="radio" name="platform" value="tiktok" class="text-brand-500 bg-dark-900 border-white/20 focus:ring-brand-500">
+                    <i class="ph-fill ph-tiktok-logo text-white text-xl"></i>
+                    <span class="font-medium">TikTok (Mock)</span>
+                </label>
             </div>
-            
-            <div id="statusAlert" class="hidden mt-4 p-3 bg-blue-500/10 border border-blue-500/20 text-blue-400 rounded-lg text-sm font-medium"></div>
-        </section>
 
-        <!-- Loading State -->
-        <section id="loadingState" class="hidden flex-col items-center justify-center py-20 space-y-6">
-            <div class="relative flex items-center justify-center w-24 h-24">
-                <div class="absolute inset-0 border-t-2 border-brand-500 rounded-full animate-spin"></div>
-                <div class="absolute inset-2 border-r-2 border-blue-500 rounded-full animate-spin" style="animation-direction: reverse; animation-duration: 1.5s;"></div>
-                <i class="ph-fill ph-brain text-3xl text-gradient-text animate-pulse"></i>
+            <!-- Query Input -->
+            <div class="relative bg-dark-800 rounded-2xl border border-white/10 overflow-hidden flex items-center p-2">
+                <i class="ph-bold ph-magnifying-glass text-slate-400 text-xl ml-4"></i>
+                <input type="text" id="searchInput" class="w-full bg-transparent text-white placeholder-slate-500 p-4 outline-none text-lg" placeholder="Enter keyword or product name (e.g. 'suco verde', 'creatina')">
+                <button id="btnSearch" class="bg-brand-500 hover:bg-brand-600 text-white px-8 py-3 rounded-xl font-semibold transition-all">
+                    Mine Clips
+                </button>
             </div>
-            <div class="text-center space-y-2">
-                <h3 class="text-xl font-semibold text-white">Analisando o Backend...</h3>
-                <p id="loadingText" class="text-slate-400 text-sm">Iniciando a requisição para o FastAPI na porta 8000...</p>
-            </div>
-        </section>
 
-        <!-- Results Section -->
-        <section id="resultsSection" class="hidden space-y-6 mt-4">
-            <div class="flex flex-col gap-4 border-b border-white/5 pb-4">
-                <div class="flex items-end justify-between">
-                    <div>
-                        <h3 class="text-2xl font-bold text-white flex items-center gap-2">
-                            <i class="ph-fill ph-fire text-brand-500"></i>
-                            Vídeos Milionários (Validados)
-                        </h3>
-                        <p id="resultsSubtitle" class="text-slate-400 text-sm mt-1">Carregando métricas de IA...</p>
+            <!-- Filters -->
+            <div class="flex flex-wrap gap-4 items-center justify-center text-sm">
+                <select id="filterTime" class="bg-dark-800 border border-white/10 text-slate-300 rounded-lg px-4 py-2 outline-none focus:border-brand-500">
+                    <option value="">Any Time</option>
+                    <option value="24h">Last 24 Hours</option>
+                    <option value="30d">Last 30 Days</option>
+                </select>
+
+                <div class="relative w-64">
+                    <input type="text" id="filterChannel" placeholder="Specific Channel" class="w-full bg-dark-800 border border-white/10 text-slate-300 rounded-lg px-4 py-2 outline-none focus:border-brand-500" autocomplete="off">
+
+                    <!-- Autocomplete Dropdown -->
+                    <div id="channelAutocomplete" class="absolute z-50 w-full mt-2 bg-dark-800 border border-white/10 rounded-lg shadow-xl overflow-hidden hidden">
+                        <ul id="channelSuggestions" class="max-h-60 overflow-y-auto">
+                            <!-- Injected via JS -->
+                        </ul>
                     </div>
                 </div>
             </div>
 
-            <!-- Grid de Cards renderizado via JS -->
-            <div class="grid grid-cols-1 lg:grid-cols-2 gap-6" id="cardsContainer">
-                <!-- Os cards vão parar aqui pelo fetch da API -->
+            <div id="statusAlert" class="hidden text-center text-brand-500 font-medium"></div>
+        </section>
+
+        <!-- Results Grid -->
+        <section id="resultsSection" class="hidden">
+            <div class="flex justify-between items-center border-b border-white/10 pb-4 mb-6">
+                <h3 class="text-2xl font-bold text-white">Found Clips</h3>
+            </div>
+            <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6" id="cardsContainer">
+                <!-- Cards injected here -->
             </div>
         </section>
 
     </main>
 
-    <script>
-        const API_BASE_URL = "http://127.0.0.1:8000/api/v1";
-        const moneyFormatter = new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' });
+    <!-- Global Floating Action Button -->
+    <div class="fixed bottom-8 right-8 z-50">
+        <button id="btnDownloadSelected" disabled class="bg-dark-800 border border-white/10 text-slate-400 px-6 py-4 rounded-2xl font-bold shadow-2xl flex items-center gap-3 transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed">
+            <i class="ph-bold ph-download-simple text-2xl"></i>
+            <span>Download Selected (<span id="selectedCount">0</span>)</span>
+        </button>
+    </div>
 
-        document.getElementById('btnSearch').addEventListener('click', async () => {
-            const promptValue = document.getElementById('promptInput').value.trim();
-            if (!promptValue) {
-                alert("Por favor, descreva a intenção do seu criativo antes de prospectar.");
-                document.getElementById('promptInput').focus();
+    <script>
+        const API_BASE_URL = "http://127.0.0.1:8000/api/v1/miner";
+        let selectedVideos = [];
+        let videoDataMap = {}; // Maps videoId to {url, start, end}
+
+        // --- Channel Filter & Autocomplete Logic ---
+        const MOCK_CHANNELS = [
+            { name: "Health Guru", handle: "@healthguru", subs: "1.2M" },
+            { name: "Fitness Pro", handle: "@fitness_pro", subs: "850K" },
+            { name: "Dr. Lair Ribeiro Cortes", handle: "@laircortes", subs: "2.5M" },
+            { name: "Renato Cariani", handle: "@renatocariani", subs: "5M" },
+            { name: "Growth Supplements", handle: "@growthsupplements", subs: "3M" }
+        ];
+
+        const channelInput = document.getElementById('filterChannel');
+        const autocompleteDropdown = document.getElementById('channelAutocomplete');
+        const suggestionsList = document.getElementById('channelSuggestions');
+
+        channelInput.addEventListener('input', (e) => {
+            const val = e.target.value.toLowerCase().trim();
+            suggestionsList.innerHTML = '';
+
+            if (!val) {
+                autocompleteDropdown.classList.add('hidden');
                 return;
             }
 
-             // UI Setup
-            document.getElementById('resultsSection').classList.add('hidden');
-            document.getElementById('statusAlert').classList.add('hidden');
-            document.getElementById('loadingState').classList.remove('hidden');
-            document.getElementById('loadingState').classList.add('flex');
-            
-            const btnSearch = document.getElementById('btnSearch');
-            const originalBtnHtml = btnSearch.innerHTML;
-            btnSearch.innerHTML = '<i class="ph-bold ph-spinner animate-spin"></i><span>Buscando...</span>';
-            btnSearch.disabled = true;
+            const matches = MOCK_CHANNELS.filter(c => c.name.toLowerCase().includes(val) || c.handle.toLowerCase().includes(val));
 
-            const loadingText = document.getElementById('loadingText');
-            const cardsContainer = document.getElementById('cardsContainer');
-            cardsContainer.innerHTML = '';
-            
-            try {
-                // FASE 1: Bater na Rota de Trends do Kalodata (Acessa o GPT por baixo dos panos)
-                loadingText.innerText = `Consultando Inteligência de Mercado para o prompt: "${promptValue.substring(0,25)}..."`;
-                
-                const trendsResponse = await fetch(`${API_BASE_URL}/kalodata/trends?use_llm=true&user_prompt=${encodeURIComponent(promptValue)}`);
-                if (!trendsResponse.ok) throw new Error("Erro de comunicação com FastAPI na Rota de Trends.");
-                
-                const trendsData = await trendsResponse.json();
-                
-                if (!trendsData.strategic_analysis || trendsData.strategic_analysis.length === 0) {
-                    throw new Error("O LLM não conseguiu identificar padrões comerciais para esses produtos de pico.");
-                }
-
-                const topProduct = trendsData.strategic_analysis[0];
-                const targetNiche = topProduct.identified_niches[0] || "geral";
-                
-                // Exibe as insights do LLM no topo da Ui
-                document.getElementById('resultsSubtitle').innerHTML = `A IA analisou <strong>${trendsData.raw_products.length}</strong> super produtos em pico e identificou o nicho alvo: <span class="highlight-word px-2 py-0.5">${targetNiche.toUpperCase()}</span>`;
-
-                // FASE 2: Bater na rota de Viral Videos para extrair os Criativos ($GMV) baseados no Nicho mapeado pelo ChatGPT
-                loadingText.innerText = `Buscando Vídeos Originais do TikTok pro nicho '${targetNiche}'...`;
-                
-                const videoURL = `${API_BASE_URL}/kalodata/viral-videos/${encodeURIComponent(targetNiche)}?product_name=${encodeURIComponent(topProduct.product_name)}&min_gmv=10000`;
-                const videosRes = await fetch(videoURL);
-                if (!videosRes.ok) throw new Error("Erro ao buscar os vídeos lucrativos na API.");
-                
-                const videosData = await videosRes.json();
-                
-                loadingText.innerText = `Renderizando resultados...`;
-
-                // Construção dinâmica dos Cards HTML
-                if (videosData.videos && videosData.videos.length > 0) {
-                    videosData.videos.forEach(video => {
-                        const cardHtml = `
-                        <div class="glass-panel rounded-2xl overflow-hidden group hover:border-brand-500/30 transition-all duration-300 relative border border-white/5">
-                            <div class="p-5 flex flex-col gap-4 h-full">
-                                
-                                <div class="flex justify-between items-start">
-                                    <div class="flex gap-3 items-center">
-                                        <img src="https://ui-avatars.com/api/?name=${video.creator}&background=1F2937&color=4ade80&bold=true" alt="Creator" class="w-10 h-10 rounded-full border border-dark-600">
-                                        <div>
-                                            <h4 class="text-white font-semibold text-sm">@${video.creator}</h4>
-                                            <div class="text-xs text-slate-400 flex items-center gap-1 mt-0.5">
-                                                <span><i class="ph-fill ph-eye"></i> ${video.metrics.views.toLocaleString()} visualizações</span>
-                                            </div>
-                                        </div>
-                                    </div>
-                                    <div class="bg-brand-500/10 border border-brand-500/20 text-brand-400 px-3 py-1.5 rounded-lg text-xs font-bold flex flex-col items-end gap-0.5 shadow-sm shadow-brand-500/10">
-                                        <span class="flex items-center gap-1 text-sm"><i class="ph-fill ph-money"></i> ${moneyFormatter.format(video.metrics.gmv_generated)} (GMV)</span>
-                                        <span class="text-[10px] uppercase tracking-wider text-brand-500/80">${video.metrics.sales_count} Vendas Realizadas</span>
-                                    </div>
-                                </div>
-
-                                <div class="grid grid-cols-5 gap-5 mt-3">
-                                    
-                                    <div class="col-span-2 relative aspect-[9/16] bg-dark-900 rounded-xl overflow-hidden border border-white/5 flex items-center justify-center group-hover:border-white/10 transition-colors">
-                                        <img src="https://images.unsplash.com/photo-1571019614242-c5c5dee9f50b?q=80&w=400&auto=format&fit=crop" class="w-full h-full object-cover opacity-50 mix-blend-luminosity">
-                                        <div class="absolute inset-0 flex items-center justify-center bg-black/40">
-                                            <button onclick="alert('Abrindo vídeo Original Vencedor no TikTok Player')" class="w-12 h-12 rounded-full bg-brand-500 text-white flex items-center justify-center shadow-[0_0_20px_rgba(34,197,94,0.4)] transform group-hover:scale-105 transition-all">
-                                                <i class="ph-fill ph-play text-xl ml-1"></i>
-                                            </button>
-                                        </div>
-                                    </div>
-                                    
-                                    <div class="col-span-3 flex flex-col justify-between">
-                                        <div class="space-y-4">
-                                            <div>
-                                                <span class="inline-flex items-center gap-1.5 bg-blue-500/15 text-blue-400 px-2.5 py-1 rounded text-[10px] uppercase font-bold tracking-wider mb-2 border border-blue-500/20">
-                                                    <i class="ph-bold ph-quotes"></i> Título/Hook Original
-                                                </span>
-                                                <h3 class="text-base font-semibold leading-snug text-white">
-                                                    "${video.title}"
-                                                </h3>
-                                            </div>
-
-                                            <div class="bg-dark-800/80 rounded-lg p-3 border border-white/5 space-y-2">
-                                                <p class="text-xs text-white/50 uppercase tracking-widest font-semibold flex items-center gap-1">
-                                                    <i class="ph-fill ph-brain text-brand-500 text-sm"></i> Estratégia Identificada pelo GPT
-                                                </p>
-                                                <div class="text-[13px] text-slate-300">
-                                                    <p class="mb-1"><span class="text-slate-500">Produto Âncora:</span> <strong class="text-white">${topProduct.product_name}</strong></p>
-                                                    <p class="leading-relaxed"><span class="text-slate-500">Apelo:</span> ${topProduct.market_appeal}</p>
-                                                </div>
-                                            </div>
-                                        </div>
-                                        
-                                        <div class="mt-4 pt-4 border-t border-white/5">
-                                            <button onclick="iniciarCorteAssincrono(${video.id})" class="w-full bg-dark-700 hover:bg-brand-600 border border-white/10 hover:border-brand-500 shadow-md shadow-transparent hover:shadow-brand-500/20 text-white py-2.5 rounded-xl text-sm font-semibold transition-all flex items-center justify-center gap-2">
-                                                <i class="ph-bold ph-scissors text-lg"></i>
-                                                Mandar Celery/Backend Recortar
-                                            </button>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
+            if (matches.length > 0) {
+                autocompleteDropdown.classList.remove('hidden');
+                matches.forEach(match => {
+                    const li = document.createElement('li');
+                    li.className = "px-4 py-3 hover:bg-white/5 cursor-pointer border-b border-white/5 last:border-0 flex items-center justify-between transition-colors";
+                    li.innerHTML = `
+                        <div class="flex flex-col">
+                            <span class="text-sm font-semibold text-white">${match.name}</span>
+                            <span class="text-xs text-brand-500">${match.handle}</span>
                         </div>
-                        `;
-                        cardsContainer.insertAdjacentHTML('beforeend', cardHtml);
+                        <span class="text-xs text-slate-400"><i class="ph-fill ph-users"></i> ${match.subs}</span>
+                    `;
+                    // Fix: On click, select handle, hide dropdown, and trigger focus back to main search (unblock)
+                    li.addEventListener('click', () => {
+                        channelInput.value = match.handle;
+                        autocompleteDropdown.classList.add('hidden');
+                        document.getElementById('searchInput').focus(); // UX unblock
                     });
-                } else {
-                    cardsContainer.innerHTML = `<div class="col-span-2 text-center py-10"><p class="text-slate-400 text-lg">Nenhum vídeo com faturamento acima do piso foi encontrado para o nicho ${targetNiche}.</p></div>`;
-                }
-                
-                // Mostra a UI limpa
-                document.getElementById('loadingState').classList.add('hidden');
-                document.getElementById('loadingState').classList.remove('flex');
-                document.getElementById('resultsSection').classList.remove('hidden');
-                
-                // Alerta de Sucesso
-                const alertBox = document.getElementById('statusAlert');
-                alertBox.innerHTML = `<i class="ph-fill ph-check-circle mr-1"></i> Integração com <strong>127.0.0.1:8000/api/v1/kalodata</strong> concluída com código 200 OK.`;
-                alertBox.classList.remove('hidden');
-
-            } catch(err) {
-                console.error(err);
-                const alertBox = document.getElementById('statusAlert');
-                alertBox.innerHTML = `<i class="ph-fill ph-warning-circle mr-1"></i> ${err.message}. Lembre-se de rodar o servidor FastAPI (uvicorn) localmente.`;
-                alertBox.classList.remove('hidden');
-                alertBox.className = "mt-4 p-3 bg-red-500/10 border border-red-500/20 text-red-400 rounded-lg text-sm font-medium";
-                
-                document.getElementById('loadingState').classList.add('hidden');
-                document.getElementById('loadingState').classList.remove('flex');
-            } finally {
-                btnSearch.innerHTML = originalBtnHtml;
-                btnSearch.disabled = false;
+                    suggestionsList.appendChild(li);
+                });
+            } else {
+                autocompleteDropdown.classList.add('hidden');
             }
         });
 
-        // Função mock para a chamada da Rota REST de Processamento Demorado do Prospector
-        async function iniciarCorteAssincrono(videoId) {
-            alert("Em breve!\n" +
-                  "Chamará a rota: POST /api/v1/prospector/jobs\n" +
-                  "A API vai criar a tarefa no Banco de Dados (Status 'pending') e o Celery assumirá usando o modelo Tone Editor.");
+        // Hide dropdown on outside click
+        document.addEventListener('click', (e) => {
+            if (!channelInput.contains(e.target) && !autocompleteDropdown.contains(e.target)) {
+                autocompleteDropdown.classList.add('hidden');
+            }
+        });
+
+        document.getElementById('btnSearch').addEventListener('click', async () => {
+            const query = document.getElementById('searchInput').value.trim();
+            if (!query) return alert("Enter a keyword to search.");
+
+            const platform = document.querySelector('input[name="platform"]:checked').value;
+            const filterTime = document.getElementById('filterTime').value;
+            const channel = document.getElementById('filterChannel').value.trim();
+
+            const btn = document.getElementById('btnSearch');
+            btn.innerHTML = '<i class="ph-bold ph-spinner animate-spin"></i>';
+            btn.disabled = true;
+            document.getElementById('resultsSection').classList.add('hidden');
+            document.getElementById('statusAlert').classList.add('hidden');
+            document.getElementById('cardsContainer').innerHTML = '';
+            
+            try {
+                const reqBody = {
+                    query: query,
+                    platform: platform,
+                    max_results: 12,
+                    filter_time: filterTime || null,
+                    channel_name: channel || null
+                };
+
+                const res = await fetch(`${API_BASE_URL}/search`, {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify(reqBody)
+                });
+                
+                if (!res.ok) throw new Error("Backend search failed");
+                const data = await res.json();
+                
+                if(data.data.length === 0) {
+                    document.getElementById('statusAlert').innerText = "No results found.";
+                    document.getElementById('statusAlert').classList.remove('hidden');
+                    return;
+                }
+
+                renderCards(data.data, platform, query);
+                document.getElementById('resultsSection').classList.remove('hidden');
+
+            } catch (err) {
+                console.error(err);
+                document.getElementById('statusAlert').innerText = `Error: ${err.message}. Is backend running?`;
+                document.getElementById('statusAlert').classList.remove('hidden');
+            } finally {
+                btn.innerHTML = 'Mine Clips';
+                btn.disabled = false;
+            }
+        });
+
+        async function renderCards(videos, platform, queryWord) {
+            const container = document.getElementById('cardsContainer');
+
+            for (let vid of videos) {
+                if(!vid.id) continue;
+                
+                // Smart 20s Slider Positioning: [MatchTime - 5s] to [MatchTime + 15s]
+                let keywordStart = 0;
+                let keywordEnd = 20;
+                
+                if (platform === 'youtube') {
+                    try {
+                        const hRes = await fetch(`${API_BASE_URL}/highlights?video_url=${encodeURIComponent(vid.url)}&query_word=${encodeURIComponent(queryWord)}`);
+                        if (hRes.ok) {
+                            const hData = await hRes.json();
+                            if(hData.highlights && hData.highlights.length > 0) {
+                                // Explicit logic: Center 20s window around the detected timestamp
+                                const matchTime = hData.highlights[0].start_time;
+                                keywordStart = Math.max(0, matchTime - 5);
+                                keywordEnd = Math.min(vid.duration || 60, keywordStart + 20);
+                            }
+                        }
+                    } catch(e) { console.warn("Transcript failed, defaulting to 0s", e); }
+                }
+
+                videoDataMap[vid.id] = {
+                    url: vid.url,
+                    duration: vid.duration || 60,
+                    start: keywordStart,
+                    end: keywordEnd
+                };
+
+                const cardHtml = `
+                <div class="glass-panel rounded-2xl overflow-hidden border border-white/5 relative">
+                    <!-- Checkbox -->
+                    <div class="absolute top-3 left-3 z-10">
+                        <input type="checkbox" onchange="toggleSelection('${vid.id}', this.checked)" class="w-6 h-6 rounded border-white/20 bg-dark-900 text-brand-500 focus:ring-brand-500 cursor-pointer">
+                    </div>
+
+                    <!-- Video Preview Area -->
+                    <div class="aspect-video bg-dark-900 relative group overflow-hidden"
+                         onmouseenter="playPreview('${vid.id}', '${platform}', ${keywordStart})"
+                         onmouseleave="stopPreview('${vid.id}')">
+
+                        <!-- Thumbnail (Fallback to simple image if yt-dlp didnt provide thumbnail) -->
+                        <img id="thumb-${vid.id}" src="https://i.ytimg.com/vi/${vid.id}/hqdefault.jpg" class="w-full h-full object-cover transition-opacity duration-300" onerror="this.src='https://placehold.co/600x400/16191E/333333?text=No+Thumbnail'">
+
+                        <!-- Hover Overlay Text -->
+                        <div class="absolute inset-0 bg-black/40 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none z-10">
+                            <span class="bg-black/80 px-3 py-1 rounded text-xs font-medium">10s Preview...</span>
+                        </div>
+
+                        <!-- Iframe Container -->
+                        <div id="player-${vid.id}" class="absolute inset-0 hidden"></div>
+                    </div>
+
+                    <div class="p-4 space-y-4">
+                        <h4 class="text-sm font-semibold text-white line-clamp-2" title="${vid.title}">${vid.title}</h4>
+                        <div class="flex justify-between text-xs text-slate-400">
+                            <span><i class="ph-fill ph-eye"></i> ${vid.view_count.toLocaleString()}</span>
+                            <span>@${vid.channel}</span>
+                        </div>
+
+                        <!-- Slicing Controller -->
+                        <div class="pt-3 border-t border-white/10">
+                            <div class="flex justify-between text-xs mb-2">
+                                <span class="text-brand-500 font-medium">Start: <span id="start-label-${vid.id}">${formatTime(keywordStart)}</span></span>
+                                <span class="text-brand-500 font-medium">End: <span id="end-label-${vid.id}">${formatTime(keywordEnd)}</span></span>
+                            </div>
+
+                            <div class="relative h-6 w-full mt-2">
+                                <div class="slider-track absolute left-0 right-0"></div>
+                                <!-- Dual Sliders -->
+                                <input type="range" id="slider-start-${vid.id}" min="0" max="${vid.duration}" value="${keywordStart}" step="1" oninput="updateSlider('${vid.id}', 'start')">
+                                <input type="range" id="slider-end-${vid.id}" min="0" max="${vid.duration}" value="${keywordEnd}" step="1" oninput="updateSlider('${vid.id}', 'end')">
+                            </div>
+                            <div class="text-center mt-2">
+                                <span class="text-[10px] text-slate-500">Max slice limit: 20s. Stream Chunking.</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>`;
+                container.insertAdjacentHTML('beforeend', cardHtml);
+
+                // Initialize visual track
+                updateTrackVisuals(vid.id);
+            }
         }
+
+        // --- Dual Slider Logic enforcing 20s max limit ---
+        function updateSlider(vidId, type) {
+            const startSlider = document.getElementById(`slider-start-${vidId}`);
+            const endSlider = document.getElementById(`slider-end-${vidId}`);
+            let startVal = parseFloat(startSlider.value);
+            let endVal = parseFloat(endSlider.value);
+
+            // Prevent crossing
+            if (startVal >= endVal) {
+                if (type === 'start') startSlider.value = endVal - 1;
+                else endSlider.value = startVal + 1;
+                startVal = parseFloat(startSlider.value);
+                endVal = parseFloat(endSlider.value);
+            }
+
+            // Enforce max 20s
+            const MAX_RANGE = 20;
+            let isMaxed = false;
+
+            if (endVal - startVal >= MAX_RANGE) {
+                isMaxed = true;
+                if (endVal - startVal > MAX_RANGE) {
+                    if (type === 'start') {
+                        startSlider.value = endVal - MAX_RANGE;
+                    } else {
+                        endSlider.value = startVal + MAX_RANGE;
+                    }
+                }
+            }
+
+            // Update Labels & Memory
+            document.getElementById(`start-label-${vidId}`).innerText = formatTime(startSlider.value);
+            document.getElementById(`end-label-${vidId}`).innerText = formatTime(endSlider.value);
+            videoDataMap[vidId].start = parseFloat(startSlider.value);
+            videoDataMap[vidId].end = parseFloat(endSlider.value);
+
+            updateTrackVisuals(vidId, isMaxed);
+        }
+
+        function updateTrackVisuals(vidId, isMaxed = false) {
+            const startSlider = document.getElementById(`slider-start-${vidId}`);
+            const endSlider = document.getElementById(`slider-end-${vidId}`);
+            const track = startSlider.previousElementSibling;
+
+            // Safe fallback if duration wasn't mapped correctly by yt-dlp
+            const max = parseFloat(startSlider.max) || 60;
+            const startPct = (parseFloat(startSlider.value) / max) * 100;
+            const endPct = (parseFloat(endSlider.value) / max) * 100;
+
+            track.style.left = `${startPct}%`;
+            track.style.width = `${endPct - startPct}%`;
+
+            // Visual feedback when hitting the hard constraint
+            if(isMaxed) {
+                track.style.backgroundColor = '#facc15'; // yellow-400 warning
+            } else {
+                track.style.backgroundColor = '#ef4444'; // brand-500 default
+            }
+        }
+
+        function formatTime(sec) {
+            const m = Math.floor(sec / 60);
+            const s = Math.floor(sec % 60);
+            return `${m}:${s.toString().padStart(2, '0')}`;
+        }
+
+        // --- Hover Preview Logic (Embeds YT Iframe dynamically to save DOM size) ---
+        let activePlayerTimeouts = {};
+        let hoverDebounceTimers = {};
+
+        function playPreview(vidId, platform, startTime) {
+            if (platform !== 'youtube') return;
+
+            // Clear any existing stop timeout if we re-enter quickly
+            clearTimeout(activePlayerTimeouts[vidId]);
+
+            // Debounce the iframe injection by 400ms to prevent mass loading when mouse sweeps across screen
+            hoverDebounceTimers[vidId] = setTimeout(() => {
+                const playerDiv = document.getElementById(`player-${vidId}`);
+                const thumb = document.getElementById(`thumb-${vidId}`);
+
+                // Only inject if it's not already playing
+                if (playerDiv.innerHTML === '') {
+                    playerDiv.innerHTML = `<iframe width="100%" height="100%" src="https://www.youtube.com/embed/${vidId}?autoplay=1&mute=1&start=${Math.floor(startTime)}&controls=0&modestbranding=1" frameborder="0" allow="autoplay; encrypted-media"></iframe>`;
+                    playerDiv.classList.remove('hidden');
+                    thumb.classList.add('opacity-0');
+                }
+
+                // Force stop after 10s of playing
+                activePlayerTimeouts[vidId] = setTimeout(() => {
+                    stopPreview(vidId);
+                }, 10000);
+            }, 400); // 400ms debounce
+        }
+
+        function stopPreview(vidId) {
+            // Cancel any pending load if mouse leaves before debounce fires
+            clearTimeout(hoverDebounceTimers[vidId]);
+            clearTimeout(activePlayerTimeouts[vidId]);
+
+            const playerDiv = document.getElementById(`player-${vidId}`);
+            const thumb = document.getElementById(`thumb-${vidId}`);
+
+            // Destroy iframe completely to free memory and kill audio/video
+            playerDiv.innerHTML = '';
+            playerDiv.classList.add('hidden');
+            thumb.classList.remove('opacity-0');
+        }
+
+        // --- Download Selection Logic ---
+        function toggleSelection(vidId, isChecked) {
+            if (isChecked) {
+                if (!selectedVideos.includes(vidId)) selectedVideos.push(vidId);
+            } else {
+                selectedVideos = selectedVideos.filter(id => id !== vidId);
+            }
+
+            const btn = document.getElementById('btnDownloadSelected');
+            const countSpan = document.getElementById('selectedCount');
+            countSpan.innerText = selectedVideos.length;
+
+            if (selectedVideos.length > 0) {
+                btn.disabled = false;
+                btn.classList.remove('bg-dark-800', 'text-slate-400');
+                btn.classList.add('bg-brand-600', 'text-white', 'hover:bg-brand-500', 'shadow-brand-500/50');
+            } else {
+                btn.disabled = true;
+                btn.classList.add('bg-dark-800', 'text-slate-400');
+                btn.classList.remove('bg-brand-600', 'text-white', 'hover:bg-brand-500', 'shadow-brand-500/50');
+            }
+        }
+
+        document.getElementById('btnDownloadSelected').addEventListener('click', async () => {
+            const btn = document.getElementById('btnDownloadSelected');
+            const originalHtml = btn.innerHTML;
+            btn.innerHTML = '<i class="ph-bold ph-spinner animate-spin text-2xl"></i> Slicing streams...';
+            btn.disabled = true;
+
+            const payload = {
+                clips: selectedVideos.map(vidId => ({
+                    video_url: videoDataMap[vidId].url,
+                    start_time: videoDataMap[vidId].start,
+                    end_time: videoDataMap[vidId].end
+                }))
+            };
+
+            try {
+                const res = await fetch(`${API_BASE_URL}/download-clips`, {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify(payload)
+                });
+                
+                const data = await res.json();
+                if(res.ok) {
+                    alert(`Success: ${data.message}`);
+                } else {
+                    alert(`Backend Error: ${data.detail}`);
+                }
+            } catch (err) {
+                alert(`Network Error: ${err.message}`);
+            } finally {
+                btn.innerHTML = originalHtml;
+                btn.disabled = false;
+            }
+        });
     </script>
 </body>
 </html>
