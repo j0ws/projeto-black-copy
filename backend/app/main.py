@@ -3,17 +3,18 @@ from fastapi.responses import RedirectResponse
 from fastapi.middleware.cors import CORSMiddleware
 
 from app.database import engine
-from app.models import domain
-from app.routers import miner
+from app.models import Base
+from app.routers import miner, product
 
 # Create tables for MVP (SQLite)
-domain.Base.metadata.create_all(bind=engine)
+Base.metadata.create_all(bind=engine)
 
 app = FastAPI(
-    title="BlackCopy AI - Miner Backend",
+    title="BlackCopy AI - Intelligence Backend",
     description="""
 API for the Ad Intelligence Orchestrator.
 ## Modules
+* **🧠 Product Intelligence:** The central brain storing marketing briefings (pain points, benefits, objections) for products.
 * **⛏️ Miner:** Searches YouTube/TikTok for viral clips, extracts transcript highlights, and slices 20s stream chunks using FFmpeg.
 """,
     version="1.0.0"
@@ -28,6 +29,7 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+app.include_router(product.router)
 app.include_router(miner.router)
 
 # Root route redirects immediately to Swagger documentation
