@@ -309,11 +309,16 @@
 
             // Enforce max 20s
             const MAX_RANGE = 20;
-            if (endVal - startVal > MAX_RANGE) {
-                if (type === 'start') {
-                    endSlider.value = startVal + MAX_RANGE;
-                } else {
-                    startSlider.value = endVal - MAX_RANGE;
+            let isMaxed = false;
+
+            if (endVal - startVal >= MAX_RANGE) {
+                isMaxed = true;
+                if (endVal - startVal > MAX_RANGE) {
+                    if (type === 'start') {
+                        startSlider.value = endVal - MAX_RANGE;
+                    } else {
+                        endSlider.value = startVal + MAX_RANGE;
+                    }
                 }
             }
 
@@ -323,20 +328,28 @@
             videoDataMap[vidId].start = parseFloat(startSlider.value);
             videoDataMap[vidId].end = parseFloat(endSlider.value);
 
-            updateTrackVisuals(vidId);
+            updateTrackVisuals(vidId, isMaxed);
         }
 
-        function updateTrackVisuals(vidId) {
+        function updateTrackVisuals(vidId, isMaxed = false) {
             const startSlider = document.getElementById(`slider-start-${vidId}`);
             const endSlider = document.getElementById(`slider-end-${vidId}`);
             const track = startSlider.previousElementSibling;
 
-            const max = parseFloat(startSlider.max);
+            // Safe fallback if duration wasn't mapped correctly by yt-dlp
+            const max = parseFloat(startSlider.max) || 60;
             const startPct = (parseFloat(startSlider.value) / max) * 100;
             const endPct = (parseFloat(endSlider.value) / max) * 100;
 
             track.style.left = `${startPct}%`;
             track.style.width = `${endPct - startPct}%`;
+
+            // Visual feedback when hitting the hard constraint
+            if(isMaxed) {
+                track.style.backgroundColor = '#facc15'; // yellow-400 warning
+            } else {
+                track.style.backgroundColor = '#ef4444'; // brand-500 default
+            }
         }
 
         function formatTime(sec) {
@@ -347,28 +360,42 @@
 
         // --- Hover Preview Logic (Embeds YT Iframe dynamically to save DOM size) ---
         let activePlayerTimeouts = {};
+        let hoverDebounceTimers = {};
 
         function playPreview(vidId, platform, startTime) {
             if (platform !== 'youtube') return;
-            const playerDiv = document.getElementById(`player-${vidId}`);
-            const thumb = document.getElementById(`thumb-${vidId}`);
 
-            // Inject iframe
-            playerDiv.innerHTML = `<iframe width="100%" height="100%" src="https://www.youtube.com/embed/${vidId}?autoplay=1&mute=1&start=${Math.floor(startTime)}&controls=0&modestbranding=1" frameborder="0" allow="autoplay; encrypted-media"></iframe>`;
-            playerDiv.classList.remove('hidden');
-            thumb.classList.add('opacity-0');
+            // Clear any existing stop timeout if we re-enter quickly
+            clearTimeout(activePlayerTimeouts[vidId]);
 
-            // Force stop after 10s
-            activePlayerTimeouts[vidId] = setTimeout(() => {
-                stopPreview(vidId);
-            }, 10000);
+            // Debounce the iframe injection by 400ms to prevent mass loading when mouse sweeps across screen
+            hoverDebounceTimers[vidId] = setTimeout(() => {
+                const playerDiv = document.getElementById(`player-${vidId}`);
+                const thumb = document.getElementById(`thumb-${vidId}`);
+
+                // Only inject if it's not already playing
+                if (playerDiv.innerHTML === '') {
+                    playerDiv.innerHTML = `<iframe width="100%" height="100%" src="https://www.youtube.com/embed/${vidId}?autoplay=1&mute=1&start=${Math.floor(startTime)}&controls=0&modestbranding=1" frameborder="0" allow="autoplay; encrypted-media"></iframe>`;
+                    playerDiv.classList.remove('hidden');
+                    thumb.classList.add('opacity-0');
+                }
+
+                // Force stop after 10s of playing
+                activePlayerTimeouts[vidId] = setTimeout(() => {
+                    stopPreview(vidId);
+                }, 10000);
+            }, 400); // 400ms debounce
         }
 
         function stopPreview(vidId) {
+            // Cancel any pending load if mouse leaves before debounce fires
+            clearTimeout(hoverDebounceTimers[vidId]);
             clearTimeout(activePlayerTimeouts[vidId]);
+
             const playerDiv = document.getElementById(`player-${vidId}`);
             const thumb = document.getElementById(`thumb-${vidId}`);
 
+            // Destroy iframe completely to free memory and kill audio/video
             playerDiv.innerHTML = '';
             playerDiv.classList.add('hidden');
             thumb.classList.remove('opacity-0');
