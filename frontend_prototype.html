@@ -1,0 +1,346 @@
+<!DOCTYPE html>
+<html lang="pt-BR" class="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>BlackCopy AI - Prospector de Criativos</title>
+    
+    <!-- Google Fonts: Inter -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    
+    <!-- Tailwind CSS (CDN for prototype) -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- Phosphor Icons -->
+    <script src="https://unpkg.com/@phosphor-icons/web"></script>
+
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                    },
+                    colors: {
+                        brand: {
+                            50: '#f0fdf4',
+                            100: '#dcfce7',
+                            500: '#22c55e',
+                            600: '#16a34a',
+                            700: '#15803d',
+                            900: '#14532d',
+                            950: '#052e16',
+                        },
+                        dark: {
+                            900: '#0F1115',
+                            800: '#16191E',
+                            700: '#20242B',
+                            600: '#2C323D'
+                        }
+                    },
+                    animation: {
+                        'pulse-slow': 'pulse 3s cubic-bezier(0.4, 0, 0.6, 1) infinite',
+                    }
+                }
+            }
+        }
+    </script>
+
+    <style>
+        body {
+            background-color: #0F1115;
+            color: #E2E8F0;
+        }
+        
+        .glass-panel {
+            background: rgba(22, 25, 30, 0.7);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+        }
+
+        .gradient-text {
+            background: linear-gradient(135deg, #4ade80 0%, #3b82f6 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .highlight-word {
+            background-color: rgba(34, 197, 94, 0.2);
+            color: #4ade80;
+            padding: 0 4px;
+            border-radius: 4px;
+            font-weight: 600;
+        }
+        
+        .scroll-hidden::-webkit-scrollbar {
+            display: none;
+        }
+    </style>
+</head>
+<body class="min-h-screen flex flex-col antialiased selection:bg-brand-500 selection:text-white">
+
+    <!-- Header -->
+    <header class="sticky top-0 z-50 glass-panel border-b border-white/5 py-4">
+        <div class="max-w-7xl mx-auto px-6 auto flex justify-between items-center">
+            <div class="flex items-center gap-3">
+                <div class="w-8 h-8 rounded-lg bg-gradient-to-br from-brand-400 to-blue-500 flex items-center justify-center shadow-lg shadow-brand-500/20">
+                    <i class="ph-bold ph-lightning text-white text-xl"></i>
+                </div>
+                <h1 class="text-xl font-bold tracking-tight text-white">Black<span class="text-brand-500">Copy</span> AI</h1>
+            </div>
+            
+            <nav class="flex items-center gap-6 text-sm font-medium text-slate-400">
+                <a href="#" class="text-brand-500 hover:text-brand-400 transition-colors">Prospector + Kalodata</a>
+                <a href="#" class="hover:text-white transition-colors">Timeline de Edição</a>
+                <a href="#" class="hover:text-white transition-colors">Meus Criativos</a>
+            </nav>
+            
+            <div class="flex items-center gap-4">
+                <div class="text-right hidden md:block">
+                    <p class="text-sm font-medium text-white">Agência Flow</p>
+                    <p class="text-xs text-brand-500">Plano Pro</p>
+                </div>
+                <img src="https://i.pravatar.cc/150?img=11" alt="Avatar" class="w-9 h-9 rounded-full ring-2 ring-brand-500/30">
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Content -->
+    <main class="flex-1 w-full max-w-7xl mx-auto px-6 py-10 flex flex-col gap-10">
+        
+        <!-- Search Section -->
+        <section class="w-full max-w-3xl mx-auto text-center space-y-6">
+            <h2 class="text-4xl md:text-5xl font-extrabold tracking-tight text-white leading-tight">
+                Garimpo de Criativos via <span class="gradient-text">Kalodata Trends</span>
+            </h2>
+            <p class="text-slate-400 text-lg">
+                Consulte a nossa API (FastAPI) em tempo real. Identificaremos os produtos de pico usando IA, estratificaremos os nichos, e traremos as máquinas de vendas originais para recorte.
+            </p>
+
+            <div class="relative group mt-8 text-left">
+                <div class="absolute -inset-1 bg-gradient-to-r from-brand-500 to-blue-500 rounded-2xl blur opacity-25 group-hover:opacity-40 transition duration-500"></div>
+                <div class="relative bg-dark-800 rounded-2xl border border-white/10 shadow-2xl overflow-hidden focus-within:border-brand-500/50 transition-colors">
+                    
+                    <textarea id="promptInput" rows="3" class="w-full bg-transparent text-white placeholder-slate-500 p-5 outline-none resize-none text-lg" placeholder="Ex: Quero estruturar um criativo altamente lucrativo na área de Bem Estar/Saúde..."></textarea>
+                    
+                    <div class="flex items-center justify-between px-5 pb-4">
+                        <div class="flex gap-2">
+                            <button class="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-brand-500/10 hover:bg-brand-500/20 text-xs font-medium text-brand-400 transition-colors border border-brand-500/20">
+                                <i class="ph-bold ph-brain text-brand-500"></i> Usar GPT-4 Omni
+                            </button>
+                        </div>
+                        
+                        <button id="btnSearch" class="flex items-center gap-2 bg-brand-600 hover:bg-brand-500 text-white px-6 py-2.5 rounded-xl font-medium shadow-lg shadow-brand-500/25 transition-all active:scale-95">
+                            <i class="ph-bold ph-sparkle"></i>
+                            <span>Rodar Prospector API</span>
+                        </button>
+                    </div>
+                </div>
+            </div>
+            
+            <div id="statusAlert" class="hidden mt-4 p-3 bg-blue-500/10 border border-blue-500/20 text-blue-400 rounded-lg text-sm font-medium"></div>
+        </section>
+
+        <!-- Loading State -->
+        <section id="loadingState" class="hidden flex-col items-center justify-center py-20 space-y-6">
+            <div class="relative flex items-center justify-center w-24 h-24">
+                <div class="absolute inset-0 border-t-2 border-brand-500 rounded-full animate-spin"></div>
+                <div class="absolute inset-2 border-r-2 border-blue-500 rounded-full animate-spin" style="animation-direction: reverse; animation-duration: 1.5s;"></div>
+                <i class="ph-fill ph-brain text-3xl text-gradient-text animate-pulse"></i>
+            </div>
+            <div class="text-center space-y-2">
+                <h3 class="text-xl font-semibold text-white">Analisando o Backend...</h3>
+                <p id="loadingText" class="text-slate-400 text-sm">Iniciando a requisição para o FastAPI na porta 8000...</p>
+            </div>
+        </section>
+
+        <!-- Results Section -->
+        <section id="resultsSection" class="hidden space-y-6 mt-4">
+            <div class="flex flex-col gap-4 border-b border-white/5 pb-4">
+                <div class="flex items-end justify-between">
+                    <div>
+                        <h3 class="text-2xl font-bold text-white flex items-center gap-2">
+                            <i class="ph-fill ph-fire text-brand-500"></i>
+                            Vídeos Milionários (Validados)
+                        </h3>
+                        <p id="resultsSubtitle" class="text-slate-400 text-sm mt-1">Carregando métricas de IA...</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Grid de Cards renderizado via JS -->
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-6" id="cardsContainer">
+                <!-- Os cards vão parar aqui pelo fetch da API -->
+            </div>
+        </section>
+
+    </main>
+
+    <script>
+        const API_BASE_URL = "http://127.0.0.1:8000/api/v1";
+        const moneyFormatter = new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' });
+
+        document.getElementById('btnSearch').addEventListener('click', async () => {
+            const promptValue = document.getElementById('promptInput').value.trim();
+            if (!promptValue) {
+                alert("Por favor, descreva a intenção do seu criativo antes de prospectar.");
+                document.getElementById('promptInput').focus();
+                return;
+            }
+
+             // UI Setup
+            document.getElementById('resultsSection').classList.add('hidden');
+            document.getElementById('statusAlert').classList.add('hidden');
+            document.getElementById('loadingState').classList.remove('hidden');
+            document.getElementById('loadingState').classList.add('flex');
+            
+            const btnSearch = document.getElementById('btnSearch');
+            const originalBtnHtml = btnSearch.innerHTML;
+            btnSearch.innerHTML = '<i class="ph-bold ph-spinner animate-spin"></i><span>Buscando...</span>';
+            btnSearch.disabled = true;
+
+            const loadingText = document.getElementById('loadingText');
+            const cardsContainer = document.getElementById('cardsContainer');
+            cardsContainer.innerHTML = '';
+            
+            try {
+                // FASE 1: Bater na Rota de Trends do Kalodata (Acessa o GPT por baixo dos panos)
+                loadingText.innerText = `Consultando Inteligência de Mercado para o prompt: "${promptValue.substring(0,25)}..."`;
+                
+                const trendsResponse = await fetch(`${API_BASE_URL}/kalodata/trends?use_llm=true&user_prompt=${encodeURIComponent(promptValue)}`);
+                if (!trendsResponse.ok) throw new Error("Erro de comunicação com FastAPI na Rota de Trends.");
+                
+                const trendsData = await trendsResponse.json();
+                
+                if (!trendsData.strategic_analysis || trendsData.strategic_analysis.length === 0) {
+                    throw new Error("O LLM não conseguiu identificar padrões comerciais para esses produtos de pico.");
+                }
+
+                const topProduct = trendsData.strategic_analysis[0];
+                const targetNiche = topProduct.identified_niches[0] || "geral";
+                
+                // Exibe as insights do LLM no topo da Ui
+                document.getElementById('resultsSubtitle').innerHTML = `A IA analisou <strong>${trendsData.raw_products.length}</strong> super produtos em pico e identificou o nicho alvo: <span class="highlight-word px-2 py-0.5">${targetNiche.toUpperCase()}</span>`;
+
+                // FASE 2: Bater na rota de Viral Videos para extrair os Criativos ($GMV) baseados no Nicho mapeado pelo ChatGPT
+                loadingText.innerText = `Buscando Vídeos Originais do TikTok pro nicho '${targetNiche}'...`;
+                
+                const videoURL = `${API_BASE_URL}/kalodata/viral-videos/${encodeURIComponent(targetNiche)}?product_name=${encodeURIComponent(topProduct.product_name)}&min_gmv=10000`;
+                const videosRes = await fetch(videoURL);
+                if (!videosRes.ok) throw new Error("Erro ao buscar os vídeos lucrativos na API.");
+                
+                const videosData = await videosRes.json();
+                
+                loadingText.innerText = `Renderizando resultados...`;
+
+                // Construção dinâmica dos Cards HTML
+                if (videosData.videos && videosData.videos.length > 0) {
+                    videosData.videos.forEach(video => {
+                        const cardHtml = `
+                        <div class="glass-panel rounded-2xl overflow-hidden group hover:border-brand-500/30 transition-all duration-300 relative border border-white/5">
+                            <div class="p-5 flex flex-col gap-4 h-full">
+                                
+                                <div class="flex justify-between items-start">
+                                    <div class="flex gap-3 items-center">
+                                        <img src="https://ui-avatars.com/api/?name=${video.creator}&background=1F2937&color=4ade80&bold=true" alt="Creator" class="w-10 h-10 rounded-full border border-dark-600">
+                                        <div>
+                                            <h4 class="text-white font-semibold text-sm">@${video.creator}</h4>
+                                            <div class="text-xs text-slate-400 flex items-center gap-1 mt-0.5">
+                                                <span><i class="ph-fill ph-eye"></i> ${video.metrics.views.toLocaleString()} visualizações</span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="bg-brand-500/10 border border-brand-500/20 text-brand-400 px-3 py-1.5 rounded-lg text-xs font-bold flex flex-col items-end gap-0.5 shadow-sm shadow-brand-500/10">
+                                        <span class="flex items-center gap-1 text-sm"><i class="ph-fill ph-money"></i> ${moneyFormatter.format(video.metrics.gmv_generated)} (GMV)</span>
+                                        <span class="text-[10px] uppercase tracking-wider text-brand-500/80">${video.metrics.sales_count} Vendas Realizadas</span>
+                                    </div>
+                                </div>
+
+                                <div class="grid grid-cols-5 gap-5 mt-3">
+                                    
+                                    <div class="col-span-2 relative aspect-[9/16] bg-dark-900 rounded-xl overflow-hidden border border-white/5 flex items-center justify-center group-hover:border-white/10 transition-colors">
+                                        <img src="https://images.unsplash.com/photo-1571019614242-c5c5dee9f50b?q=80&w=400&auto=format&fit=crop" class="w-full h-full object-cover opacity-50 mix-blend-luminosity">
+                                        <div class="absolute inset-0 flex items-center justify-center bg-black/40">
+                                            <button onclick="alert('Abrindo vídeo Original Vencedor no TikTok Player')" class="w-12 h-12 rounded-full bg-brand-500 text-white flex items-center justify-center shadow-[0_0_20px_rgba(34,197,94,0.4)] transform group-hover:scale-105 transition-all">
+                                                <i class="ph-fill ph-play text-xl ml-1"></i>
+                                            </button>
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="col-span-3 flex flex-col justify-between">
+                                        <div class="space-y-4">
+                                            <div>
+                                                <span class="inline-flex items-center gap-1.5 bg-blue-500/15 text-blue-400 px-2.5 py-1 rounded text-[10px] uppercase font-bold tracking-wider mb-2 border border-blue-500/20">
+                                                    <i class="ph-bold ph-quotes"></i> Título/Hook Original
+                                                </span>
+                                                <h3 class="text-base font-semibold leading-snug text-white">
+                                                    "${video.title}"
+                                                </h3>
+                                            </div>
+
+                                            <div class="bg-dark-800/80 rounded-lg p-3 border border-white/5 space-y-2">
+                                                <p class="text-xs text-white/50 uppercase tracking-widest font-semibold flex items-center gap-1">
+                                                    <i class="ph-fill ph-brain text-brand-500 text-sm"></i> Estratégia Identificada pelo GPT
+                                                </p>
+                                                <div class="text-[13px] text-slate-300">
+                                                    <p class="mb-1"><span class="text-slate-500">Produto Âncora:</span> <strong class="text-white">${topProduct.product_name}</strong></p>
+                                                    <p class="leading-relaxed"><span class="text-slate-500">Apelo:</span> ${topProduct.market_appeal}</p>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        
+                                        <div class="mt-4 pt-4 border-t border-white/5">
+                                            <button onclick="iniciarCorteAssincrono(${video.id})" class="w-full bg-dark-700 hover:bg-brand-600 border border-white/10 hover:border-brand-500 shadow-md shadow-transparent hover:shadow-brand-500/20 text-white py-2.5 rounded-xl text-sm font-semibold transition-all flex items-center justify-center gap-2">
+                                                <i class="ph-bold ph-scissors text-lg"></i>
+                                                Mandar Celery/Backend Recortar
+                                            </button>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        `;
+                        cardsContainer.insertAdjacentHTML('beforeend', cardHtml);
+                    });
+                } else {
+                    cardsContainer.innerHTML = `<div class="col-span-2 text-center py-10"><p class="text-slate-400 text-lg">Nenhum vídeo com faturamento acima do piso foi encontrado para o nicho ${targetNiche}.</p></div>`;
+                }
+                
+                // Mostra a UI limpa
+                document.getElementById('loadingState').classList.add('hidden');
+                document.getElementById('loadingState').classList.remove('flex');
+                document.getElementById('resultsSection').classList.remove('hidden');
+                
+                // Alerta de Sucesso
+                const alertBox = document.getElementById('statusAlert');
+                alertBox.innerHTML = `<i class="ph-fill ph-check-circle mr-1"></i> Integração com <strong>127.0.0.1:8000/api/v1/kalodata</strong> concluída com código 200 OK.`;
+                alertBox.classList.remove('hidden');
+
+            } catch(err) {
+                console.error(err);
+                const alertBox = document.getElementById('statusAlert');
+                alertBox.innerHTML = `<i class="ph-fill ph-warning-circle mr-1"></i> ${err.message}. Lembre-se de rodar o servidor FastAPI (uvicorn) localmente.`;
+                alertBox.classList.remove('hidden');
+                alertBox.className = "mt-4 p-3 bg-red-500/10 border border-red-500/20 text-red-400 rounded-lg text-sm font-medium";
+                
+                document.getElementById('loadingState').classList.add('hidden');
+                document.getElementById('loadingState').classList.remove('flex');
+            } finally {
+                btnSearch.innerHTML = originalBtnHtml;
+                btnSearch.disabled = false;
+            }
+        });
+
+        // Função mock para a chamada da Rota REST de Processamento Demorado do Prospector
+        async function iniciarCorteAssincrono(videoId) {
+            alert("Em breve!\n" +
+                  "Chamará a rota: POST /api/v1/prospector/jobs\n" +
+                  "A API vai criar a tarefa no Banco de Dados (Status 'pending') e o Celery assumirá usando o modelo Tone Editor.");
+        }
+    </script>
+</body>
+</html>
