@@ -1,19 +1,22 @@
 import yt_dlp
 import os
 import re
-import urllib.parse
+from datetime import datetime, timedelta
 from fastapi import HTTPException
 from youtube_transcript_api import YouTubeTranscriptApi
 
-# Diretório base para depejos de downloads em /tmp (para não poluir o repo)
 TMP_DIR = os.path.join(os.getcwd(), "tmp_downloads")
 os.makedirs(TMP_DIR, exist_ok=True)
 
-def search_youtube_videos(query: str, max_results: int = 10):
+def search_youtube_videos(query: str, max_results: int = 10, filter_time: str = None, channel_name: str = None):
     """
-    Usa o yt-dlp apenas para extração de metadados da pesquisa.
+    Search YouTube videos using yt-dlp with optional filters.
+    filter_time options: '24h', '30d'
     """
-    search_query = f"ytsearch{max_results}:{query}"
+    search_query = query
+    if channel_name:
+        search_query += f" channel:{channel_name}"
+
     ydl_opts = {
         'skip_download': True,
         'extract_flat': True,
@@ -21,50 +24,64 @@ def search_youtube_videos(query: str, max_results: int = 10):
         'no_warnings': True,
     }
 
+    # Add date filters if requested (yt-dlp format: YYYYMMDD)
+    if filter_time:
+        now = datetime.now()
+        if filter_time == '24h':
+            date_filter = (now - timedelta(days=1)).strftime('%Y%m%d')
+        elif filter_time == '30d':
+            date_filter = (now - timedelta(days=30)).strftime('%Y%m%d')
+        else:
+            date_filter = None
+
+        if date_filter:
+            ydl_opts['dateafter'] = date_filter
+            # Date filtering in yt-dlp search requires retrieving full info usually,
+            # but ytsearch passes the query to Youtube. Youtube understands `after:YYYY-MM-DD` in query string sometimes
+            search_query += f" after:{(now - timedelta(days=1 if filter_time=='24h' else 30)).strftime('%Y-%m-%d')}"
+
+    # Use ytsearch syntax
+    final_query = f"ytsearch{max_results}:{search_query}"
+
     results = []
     try:
-        print(f"[MINER_API] Pesquisando Youtube por: '{query}'")
+        print(f"[MINER_API] Searching YouTube for: '{final_query}'")
         with yt_dlp.YoutubeDL(ydl_opts) as ydl:
-            dict_info = ydl.extract_info(search_query, download=False)
+            dict_info = ydl.extract_info(final_query, download=False)
             if 'entries' in dict_info:
                 for entry in dict_info['entries']:
                     if not entry: continue
-                    # Filtrar apenas vídeos comuns (pode incluir Shorts dependendo do yt-dlp)
+                    # Fallback view_count/like_count if unavailable in flat extraction
                     results.append({
                         "id": entry.get('id'),
                         "url": entry.get('url'),
                         "title": entry.get('title'),
                         "duration": entry.get('duration'),
-                        "view_count": entry.get('view_count'),
+                        "view_count": entry.get('view_count', 0),
+                        "like_count": entry.get('like_count', 0),
                         "channel": entry.get('uploader')
                     })
     except Exception as e:
-        print(f"[ERRO-YT-DLP] Falha na busca: {e}")
-        raise HTTPException(status_code=500, detail=f"Falha na busca pelo YouTube: {str(e)}")
+        print(f"[ERROR-YT-DLP] Search failed: {e}")
+        raise HTTPException(status_code=500, detail=f"Failed to search YouTube: {str(e)}")
         
     return results
 
 def get_youtube_highlights(video_url: str, query_word: str):
     """
-    Puxa a transcrição do vídeo (se existir) e encontra a palavra-chave.
-    Retorna uma lista de blocos de timestamp num raio de +- X segundos.
+    Fetches the transcript and finds the exact timestamps where the keyword is spoken.
     """
-    # Extrair video ID da URL
     video_id = None
     
-    # regex basico pra "v=XXXX" ou "youtu.be/XXXX" ou "shorts/XXX"
     match = re.search(r"(?:v=|\/)([0-9A-Za-z_-]{11}).*", video_url)
     if match:
         video_id = match.group(1)
     else:
-        raise HTTPException(status_code=400, detail="Não consegui identificar o ID do YouTube na URL enviada.")
+        raise HTTPException(status_code=400, detail="Could not identify YouTube ID from URL.")
 
-    print(f"[MINER_HIGHLIGHTS] Puxando legendas para {video_id} buscando '{query_word}'")
+    print(f"[MINER_HIGHLIGHTS] Fetching subtitles for {video_id} searching '{query_word}'")
     
     try:
-        # A biblioteca exporta uma classe e dentro dela usamos o staticmethod \`get_transcript\`
-        # Correção do erro "type object has no attribute 'get_transcript'"
-        from youtube_transcript_api import YouTubeTranscriptApi
         transcript = YouTubeTranscriptApi.get_transcript(video_id, languages=['pt', 'pt-BR', 'en'])
         
         matches = []
@@ -87,24 +104,19 @@ def get_youtube_highlights(video_url: str, query_word: str):
         return {"total_matches": len(matches), "highlights": matches}
 
     except Exception as e:
-        print(f"[MINER_HIGHLIGHTS] Video sem legendas ou protegidas: {e}")
-        return {"total_matches": -1, "error": "Transcrição indisponível ou vídeo sem legendas geradas.", "highlights": []}
+        print(f"[MINER_HIGHLIGHTS] Transcript not available: {e}")
+        return {"total_matches": -1, "error": "Transcript unavailable for this video.", "highlights": []}
 
-def download_video_clip(video_url: str, start_time: int, end_time: int, output_name: str):
+def download_video_clip(video_url: str, start_time: float, end_time: float, output_name: str):
     """
-    Usa a feature genial do yt-dlp de baixar _somente_ o trecho selecionado usando FFMPEG por trás.
-    A API já prevê o uso do *start-end para passar o range de bytes sem fazer o full download.
+    Downloads ONLY the selected slice using yt-dlp + ffmpeg under the hood.
+    Hard limit constraint: 20 seconds maximum.
     """
-    # Limitação de Segurança de recortes (Máx 30 segs)
-    if (end_time - start_time) > 30:
-        raise HTTPException(status_code=400, detail="Limitação de Segurança: O recorte não pode exceder 30 segundos.")
+    if (end_time - start_time) > 20:
+        raise HTTPException(status_code=400, detail="Security Constraint: Clip cannot exceed 20 seconds.")
 
     output_path = os.path.join(TMP_DIR, f"{output_name}.mp4")
     
-    # O Pulo do Gato: download_sections pega EXATAMENTE O RECORTE.
-    # Exemplo string de sections: "*00:00:15-00:00:25"
-    
-    # Formatação basica HH:MM:SS
     def _format_time(seconds):
         h = int(seconds // 3600)
         m = int((seconds % 3600) // 60)
@@ -119,22 +131,46 @@ def download_video_clip(video_url: str, start_time: int, end_time: int, output_n
         'format': 'bestvideo[ext=mp4]+bestaudio[ext=m4a]/best[ext=mp4]/best',
         'outtmpl': output_path,
         'download_sections': [section_arg],
-        # Force Keyframes assegura precisão cortando via ffmpeg
         'force_keyframes_at_cuts': True, 
         'quiet': True,
         'no_warnings': True,
     }
 
     try:
-        print(f"[MINER_CLIPPER] Recortando {video_url} de {str_start} a {str_end}")
+        print(f"[MINER_CLIPPER] Slicing {video_url} from {str_start} to {str_end}")
         with yt_dlp.YoutubeDL(ydl_opts) as ydl:
             ydl.download([video_url])
         
         if os.path.exists(output_path):
             return output_path
         else:
-            raise Exception("Falha: Arquivo não foi gerado no sistema de arquivos.")
+            raise Exception("File was not generated on filesystem.")
             
     except Exception as e:
-        print(f"[ERRO-CLIPPER] Falhou yt-dlp engine: {e}")
-        raise HTTPException(status_code=500, detail=f"Erro ao empacotar clipe: {str(e)}")
+        print(f"[ERROR-CLIPPER] yt-dlp engine failed: {e}")
+        raise HTTPException(status_code=500, detail=f"Error packing clip: {str(e)}")
+
+def mock_tiktok_search(query: str):
+    """
+    Mock response for TikTok platform search until official Apify integration is rebuilt for v2.0
+    """
+    return [
+        {
+            "id": "mock_tk_01",
+            "url": "https://www.tiktok.com/@healthguru/video/72000001",
+            "title": f"The secret behind {query}",
+            "duration": 45,
+            "view_count": 1200000,
+            "like_count": 85000,
+            "channel": "healthguru"
+        },
+        {
+            "id": "mock_tk_02",
+            "url": "https://www.tiktok.com/@fitness_pro/video/72000002",
+            "title": f"{query} transformed my life",
+            "duration": 30,
+            "view_count": 800000,
+            "like_count": 45000,
+            "channel": "fitness_pro"
+        }
+    ]

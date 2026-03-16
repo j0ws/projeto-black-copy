@@ -1,38 +1,25 @@
-from fastapi import FastAPI, Depends, BackgroundTasks
-from sqlalchemy.orm import Session
-from pydantic import BaseModel
-from typing import List, Optional
-import time
-
-from app.database import engine, Base, get_db
-from app.models import domain
-
-# Inicializa as tabelas do SQLite (Para MVP fácil sem Alembic no dia 1)
-domain.Base.metadata.create_all(bind=engine)
-
 from fastapi import FastAPI
 from fastapi.responses import RedirectResponse
 from fastapi.middleware.cors import CORSMiddleware
 
 from app.database import engine
 from app.models import domain
-from app.routers import scraper, miner
+from app.routers import miner
 
-# Criação das tabelas para o MVP (SQLite)
+# Create tables for MVP (SQLite)
 domain.Base.metadata.create_all(bind=engine)
 
 app = FastAPI(
-    title="Caçador de Criativos (Backend)",
+    title="BlackCopy AI - Miner Backend",
     description="""
-API do Orquestrador de Inteligência de Anúncios.
-## Recursos (Tags)
-* **📉 Kalodata & Intelligence:** Busca produtos febris e rastreia canais por lucro final.
-* **⚙️ Prospector & Editor:** Enfilera processamento pesado Assíncrono para transcrição, LLM Ad Copying e Recorte de Vídeo via FFmpeg.
+API for the Ad Intelligence Orchestrator.
+## Modules
+* **⛏️ Miner:** Searches YouTube/TikTok for viral clips, extracts transcript highlights, and slices 20s stream chunks using FFmpeg.
 """,
     version="1.0.0"
 )
 
-# Adicionando CORS para o futuro Front-End/App web conseguir bater na API limpo
+# Add CORS so the Frontend/Web App can hit the API locally
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"],
@@ -41,10 +28,9 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-app.include_router(scraper.router)
 app.include_router(miner.router)
 
-# Rota raiz que redireciona imediatamente para a documentação do Swagger
+# Root route redirects immediately to Swagger documentation
 @app.get("/", include_in_schema=False)
 def root():
     return RedirectResponse(url="/docs")
